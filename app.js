@@ -33,7 +33,7 @@ app.set('view engine', '.hbs');
 //   database: process.env.DB_NAME
 // });
 
-const routes = require('./server/routes/user');
+const routes = require('./routes/user');
 app.use('/', routes);
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
