@@ -1,4 +1,5 @@
 const mysql = require('mysql');
+const User = require('../models/User');
 
 
 // Connection Pool
@@ -8,6 +9,47 @@ let connection = mysql.createConnection({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME
 });
+
+const getDb = () => {
+  if(connection)
+    return connection;
+  return "No database found";
+}
+
+exports.getDb = getDb;
+
+// Add new user
+// exports.create = (req, res) => {
+//   const { first_name, last_name, email, phone, comments } = req.body;
+//   let searchTerm = req.body.search;
+
+//   const user = new User(first_name, last_name, email, phone, comments);
+//   user.save()
+//   .then(result => {
+//     // console.log(result);
+//     res.render('add-user', { alert: 'User added successfully.' });
+//   })
+//   .catch(err => {
+//     console.log(err);
+//   });
+// }
+
+
+// Add new user
+exports.create = (req, res) => {
+  const { first_name, last_name, email, phone, comments } = req.body;
+  let searchTerm = req.body.search;
+
+  // User the connection
+  connection.query('INSERT INTO user SET first_name = ?, last_name = ?, email = ?, phone = ?, comments = ?', [first_name, last_name, email, phone, comments], (err, rows) => {
+    if (!err) {
+      res.render('add-user', { alert: 'User added successfully.' });
+    } else {
+      console.log(err);
+    }
+    console.log('The data from user table: \n', rows);
+  });
+}
 
 // View Users
 exports.view = (req, res) => {
@@ -40,22 +82,6 @@ exports.find = (req, res) => {
 
 exports.form = (req, res) => {
   res.render('add-user');
-}
-
-// Add new user
-exports.create = (req, res) => {
-  const { first_name, last_name, email, phone, comments } = req.body;
-  let searchTerm = req.body.search;
-
-  // User the connection
-  connection.query('INSERT INTO user SET first_name = ?, last_name = ?, email = ?, phone = ?, comments = ?', [first_name, last_name, email, phone, comments], (err, rows) => {
-    if (!err) {
-      res.render('add-user', { alert: 'User added successfully.' });
-    } else {
-      console.log(err);
-    }
-    console.log('The data from user table: \n', rows);
-  });
 }
 
 
