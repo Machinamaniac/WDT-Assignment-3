@@ -63,7 +63,7 @@ class User {
         const db = controllerObject.getDb();
   
         return new Promise((resolve, reject) => {
-          db.query('SELECT * FROM user WHERE first_name LIKE ? OR last_name LIKE ?', 
+          db.query('SELECT * FROM user WHERE (first_name LIKE ? OR last_name LIKE ?) AND (status != "removed")', 
           ['%' + searchTerm + '%', '%' + searchTerm + '%'], (err, rows) => {
                 if (!err) {
                   resolve(rows);
@@ -76,12 +76,12 @@ class User {
 
 
 
-    static viewActiveUsers() {
+    static viewUsers() {
       const db = controllerObject.getDb();
 
       // User the connection
       return new Promise((resolve, reject) => {
-        db.query('SELECT * FROM user WHERE status = "active"', [], (err, rows) => {
+        db.query('SELECT * FROM user WHERE status = "active" OR status = "none"', [], (err, rows) => {
           if (!err) {
             resolve(rows);
           } else {
@@ -107,7 +107,6 @@ class User {
       })
     }
 
-    // This was left undebugged because there was no application of this function on the server.
     update(id) {
       const db = controllerObject.getDb();
 
@@ -122,7 +121,7 @@ class User {
             if (!err) 
             {
               // User the connection
-              connection.query('SELECT * FROM user WHERE id = ?', 
+              db.query('SELECT * FROM user WHERE id = ?', 
                 [id], (err, rows) => 
               {
                 // When done with the connection, release it
@@ -168,10 +167,35 @@ class User {
       });
     }
 
+    static de_activate(currentStatus, id) {
+      let newStatus;
+      if(currentStatus === 'none') {
+        newStatus = 'active';
+      } else {
+        newStatus = 'none';
+      }
+
+      const db = controllerObject.getDb();
+
+      return new Promise((resolve, reject) => {
+        db.query('UPDATE user SET status = ? WHERE id = ?', 
+        [newStatus, id], (err, rows) => {
+          if(!err) {
+            resolve(rows);
+          } else {
+            reject('Something went wrong when (de)activating the user: ' 
+              + err);
+          }
+      });
+    });
+  }
+
     static viewAll(id) {
+      const db = controllerObject.getDb();
+      
       return new Promise((resolve, reject) => 
       {
-        connection.query('SELECT * FROM user WHERE id = ?', 
+        db.query('SELECT * FROM user WHERE id = ?', 
           [id], (err, rows) => 
         {
           if (!err) {

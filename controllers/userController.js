@@ -20,6 +20,21 @@ const getDb = () => {
 
 module.exports.getDb = getDb;
 
+//Activate/Deactivate User
+exports.de_activate = (req, res) => {
+  const currentStatus = req.query.status;
+  let id = req.params.id;
+
+  User.de_activate(currentStatus, id)
+  .then(rows => {
+    res.redirect('/');
+  })
+  .catch(err => {
+    console.log('Something went wrong when (de)activating the user: ' 
+      + err);
+  });
+}
+
 
 // Add new user - new version
 module.exports.create = (req, res) => {
@@ -66,7 +81,7 @@ module.exports.find = (req, res) => {
   User.findBySearchTerm(searchTerm)
     // We retrieve rows from the database, not a user object.
     .then(rows => {
-      res.render('home', { rows });
+      res.render('home', { rows, removedUser:null });
     })
     .catch(err => {
       // console.log(err);
@@ -95,7 +110,7 @@ module.exports.find = (req, res) => {
 module.exports.view = (req, res) => {
   let removedUser = req.query.removed;
 
-  User.viewActiveUsers(req)
+  User.viewUsers(req)
   .then((rows) => {
     res.render('home', { rows, removedUser });
   })
@@ -217,28 +232,7 @@ module.exports.delete = (req, res) => {
 
 
 
-//This I do not know what is wrong, no idea how to approach this correctly in general
-//Activate/Deactivate User
-exports.de_activate = (req, res) => {
-  const {status} = req.params.status;
-  let newStatus;
-  if(status === 'none') {
-    newStatus = 'active';
-  } else {
-    newStatus = 'none';
-  }
-    connection.query('UPDATE user SET status = ? WHERE id = ?', [newStatus, req.params.id], (err, rows) => {
-      if(!err) {
-        console.log("STATUS:" + newStatus);
-        res.redirect('/', { rows });
-      } else {
-        console.log(err);
-      }
-    });
-}
-
 // Update User - new version
-// This was left undebugged because there was no application of this function on the server.
 exports.update = (req, res) => {
   const { first_name, last_name, email, phone, comments } = req.body;
   let user = new User(first_name, last_name, email, phone, comments);

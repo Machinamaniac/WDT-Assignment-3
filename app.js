@@ -21,7 +21,7 @@ app.use(express.json()); // New
 // Static Files
 app.use(express.static('public'));
 
-// Templating Enginer - new version
+// Templating Engine - new version
 app.set('view engine', 'ejs');
 
 // Templating Engine - old version
