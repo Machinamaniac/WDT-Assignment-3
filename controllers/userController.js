@@ -81,7 +81,8 @@ exports.find = (req, res) => {
 }
 
 exports.form = (req, res) => {
-  res.render('add-user');
+  //added a bit here because did not know how to fix otherwise
+  res.render('add-user', {alert:null});
 }
 
 
@@ -90,7 +91,8 @@ exports.edit = (req, res) => {
   // User the connection
   connection.query('SELECT * FROM user WHERE id = ?', [req.params.id], (err, rows) => {
     if (!err) {
-      res.render('edit-user', { rows });
+      //same goes here (alert:null added)
+      res.render('edit-user', { rows , alert : null });
     } else {
       console.log(err);
     }
@@ -123,6 +125,31 @@ exports.update = (req, res) => {
     console.log('The data from user table: \n', rows);
   });
 }
+
+
+
+//This I do not know what is wrong, no idea how to approach this correctly in general
+//Activate/Deactivate User
+exports.de_activate = (req, res) => {
+  const {status} = req.params.status;
+  let newStatus;
+  if(status === 'none') {
+    newStatus = 'active';
+  } else {
+    newStatus = 'none';
+  }
+    connection.query('UPDATE user SET status = ? WHERE id = ?', [newStatus, req.params.id], (err, rows) => {
+      if(!err) {
+        console.log("STATUS:" + newStatus);
+        res.redirect('/', { rows });
+      } else {
+        console.log(err);
+      }
+    });
+}
+
+
+
 
 // Delete User
 exports.delete = (req, res) => {
