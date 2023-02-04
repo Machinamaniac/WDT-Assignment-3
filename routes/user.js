@@ -12,5 +12,8 @@ router.get('/edituser/:id', userController.edit);
 router.post('/edituser/:id', userController.update);
 router.get('/viewuser/:id', userController.viewall);
 router.get('/:id',userController.delete);
+
+// I added this for the final task but I think I am doing something wrong
+router.post('/:id&:status', userController.de_activate);
   
 module.exports = router;

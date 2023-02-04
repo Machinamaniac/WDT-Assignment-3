@@ -124,7 +124,8 @@ module.exports.view = (req, res) => {
 
 
 module.exports.form = (req, res) => {
-  res.render('add-user');
+  //added a bit here because did not know how to fix otherwise
+  res.render('add-user', {alert:null});
 }
 
 // Edit user - new version
@@ -132,7 +133,8 @@ module.exports.edit = (req, res) => {
   let id = req.params.id;
   User.editById(id)
   .then((rows) => {
-    res.render('edit-user', { rows });
+    //same goes here (alert:null added)
+      res.render('edit-user', { rows , alert : null });
   })
   .catch(err => {
     console.log("There was a problem viewing the users: " 
@@ -214,35 +216,117 @@ module.exports.delete = (req, res) => {
 }
 
 
-// Delete User - old version
-module.exports.delete = (req, res) => {
 
-  // Delete a record
-
-  // User the connection
-  // connection.query('DELETE FROM user WHERE id = ?', [req.params.id], (err, rows) => {
-
-  //   if(!err) {
-  //     res.redirect('/');
-  //   } else {
-  //     console.log(err);
-  //   }
-  //   console.log('The data from user table: \n', rows);
-
-  // });
-
-  // Hide a record
-  connection.query('UPDATE user SET status = ? WHERE id = ?', ['removed', req.params.id], (err, rows) => {
-    if (!err) {
-      let removedUser = encodeURIComponent('User successeflly removed.');
-      res.redirect('/?removed=' + removedUser);
-    } else {
-      console.log(err);
-    }
-    console.log('The data from beer table are: \n', rows);
-  });
-
+//This I do not know what is wrong, no idea how to approach this correctly in general
+//Activate/Deactivate User
+exports.de_activate = (req, res) => {
+  const {status} = req.params.status;
+  let newStatus;
+  if(status === 'none') {
+    newStatus = 'active';
+  } else {
+    newStatus = 'none';
+  }
+    connection.query('UPDATE user SET status = ? WHERE id = ?', [newStatus, req.params.id], (err, rows) => {
+      if(!err) {
+        console.log("STATUS:" + newStatus);
+        res.redirect('/', { rows });
+      } else {
+        console.log(err);
+      }
+    });
 }
+
+// Update User - new version
+// This was left undebugged because there was no application of this function on the server.
+exports.update = (req, res) => {
+  const { first_name, last_name, email, phone, comments } = req.body;
+  let user = new User(first_name, last_name, email, phone, comments);
+  let id = req.params.id;
+  user.update(id)
+  .then(rows => {
+    res.render('edit-user', { rows, alert: `${first_name} has been updated.` });
+  })
+  .catch(err => {
+    console.log("There was a problem updating the user: " + err);
+  });
+}
+
+
+// // Update User - old version
+// exports.update = (req, res) => {
+//   const { first_name, last_name, email, phone, comments } = req.body;
+//   // User the connection
+//   connection.query('UPDATE user SET first_name = ?, last_name = ?, email = ?, phone = ?, comments = ? WHERE id = ?',
+//   [first_name, last_name, email, phone, comments, req.params.id], (err, rows) => {
+
+//     if (!err) {
+//       // User the connection
+//       connection.query('SELECT * FROM user WHERE id = ?', [req.params.id], (err, rows) => {
+//         // When done with the connection, release it
+        
+//         if (!err) {
+//           res.render('edit-user', { rows, alert: `${first_name} has been updated.` });
+//         } else {
+//           console.log(err);
+//         }
+//         console.log('The data from user table: \n', rows);
+//       });
+//     } else {
+//       console.log(err);
+//     }
+//     console.log('The data from user table: \n', rows);
+//   });
+// }
+
+
+// Delete User - new version
+module.exports.delete = (req, res) => {
+  // Hide a record
+  let id = req.params.id;
+  User.hide(id)
+  .then((rows) => {
+    let removedUser = 
+      encodeURIComponent('User successeflly removed.');
+    res.redirect('/?removed=' + removedUser);
+  })
+  .catch(err => {
+    console.log("There was a problem viewing the users: " 
+      + err);
+  }); 
+}
+
+
+
+// Delete User - old version
+// module.exports.delete = (req, res) => {
+
+//   // Delete a record
+
+//   // User the connection
+//   // connection.query('DELETE FROM user WHERE id = ?', [req.params.id], (err, rows) => {
+
+//   //   if(!err) {
+//   //     res.redirect('/');
+//   //   } else {
+//   //     console.log(err);
+//   //   }
+//   //   console.log('The data from user table: \n', rows);
+
+//   // });
+
+//   // Hide a record
+//   connection.query('UPDATE user SET status = ? WHERE id = ?', ['removed', req.params.id], (err, rows) => {
+//     if (!err) {
+//       let removedUser = encodeURIComponent('User successeflly removed.');
+//       res.redirect('/?removed=' + removedUser);
+//     } else {
+//       console.log(err);
+//     }
+//     console.log('The data from beer table are: \n', rows);
+//   });
+
+// }
 
 // View Users - new version
 module.exports.viewall = (req, res) => {
@@ -256,19 +340,3 @@ module.exports.viewall = (req, res) => {
       + err);
   });
 }
-
-
-// View Users - old version
-// module.exports.viewall = (req, res) => {
-
-//   // User the connection
-//   connection.query('SELECT * FROM user WHERE id = ?', [req.params.id], (err, rows) => {
-//     if (!err) {
-//       res.render('view-user', { rows });
-//     } else {
-//       console.log(err);
-//     }
-//     console.log('The data from user table: \n', rows);
-//   });
-
-// }
